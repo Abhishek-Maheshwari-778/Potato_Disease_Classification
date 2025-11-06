@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.DS_Store
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Models and datasets (large files kept local)
+training/models/
+training/PlantVillage/
+
+# Local/bare repo mirror
+Potato_Disease_Classification.git/
+
+# Streamlit
+.streamlit/
+
+# Logs
+*.log
