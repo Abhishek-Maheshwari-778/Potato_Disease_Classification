@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  # FastAPI Backend
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./training/models:/app/training/models
+      - ./api:/app/api
+    environment:
+      - MODEL_PATH=/app/training/models/1.keras
+      - PYTHONUNBUFFERED=1
+    command: python api/main.py
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - potato-network
+    restart: unless-stopped
+
+  # Streamlit Frontend
+  frontend:
+    build: .
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./website:/app/website
+    environment:
+      - API_URL=http://api:8000
+      - PYTHONUNBUFFERED=1
+    command: streamlit run website/app.py --server.port=8501 --server.address=0.0.0.0
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - potato-network
+    restart: unless-stopped
+
+  # Nginx Reverse Proxy (Optional)
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - api
+      - frontend
+    networks:
+      - potato-network
+    restart: unless-stopped
+    profiles:
+      - production
+
+networks:
+  potato-network:
+    driver: bridge
+
+volumes:
+  models:
+    driver: local
+  ssl:
+    driver: local
