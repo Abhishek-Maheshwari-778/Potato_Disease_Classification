@@ -7,8 +7,9 @@ import os
 # ========================================
 # Backend FastAPI endpoint
 # ========================================
-API_URL = "http://127.0.0.1:8000/predict"
-PING_URL = "http://127.0.0.1:8000/ping"
+API_BASE = os.getenv("API_BASE_URL", "http://127.0.0.1:8000")
+API_URL = f"{API_BASE}/predict"
+PING_URL = f"{API_BASE}/ping"
 
 # ========================================
 # Streamlit Page Setup

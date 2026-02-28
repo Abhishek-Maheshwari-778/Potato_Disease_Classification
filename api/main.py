@@ -6,6 +6,7 @@ from io import BytesIO
 from PIL import Image
 import tensorflow as tf
 import os
+import urllib.request
 
 app = FastAPI()
 
@@ -31,18 +32,26 @@ CLASS_NAMES = ["Early Blight", "Late Blight", "Healthy"]
 
 # Load the model
 model_path = "../training/models/1.keras"
+model_url = os.getenv("MODEL_URL")
 
 # Check if model exists
 if not os.path.exists(model_path):
-    print(f"Model not found at {model_path}. Please check the path.")
-    model = None
-else:
-    try:
-        model = tf.keras.models.load_model(model_path)
-        print("Model loaded successfully!")
-    except Exception as e:
-        print(f"Error loading model: {e}")
+    if model_url:
+        os.makedirs(os.path.dirname(model_path), exist_ok=True)
+        try:
+            urllib.request.urlretrieve(model_url, model_path)
+        except Exception:
+            model = None
+    else:
         model = None
+
+try:
+    if os.path.exists(model_path):
+        model = tf.keras.models.load_model(model_path)
+    else:
+        model = None
+except Exception:
+    model = None
 
 
 def read_file_as_image(data) -> np.ndarray:
